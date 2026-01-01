@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Kinh Tế Vi Mô - Tuấn Tú</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        #container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 90%; max-width: 600px; text-align: center; }
+        .hidden { display: none; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        .option-btn { background: #f8f9fa; color: #333; text-align: left; margin-bottom: 10px; border: 1px solid #ddd; line-height: 1.4; }
+        .option-btn:hover { background: #e9ecef; border-color: #007bff; }
+        .jerry-box { background: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; margin-top: 20px; border-radius: 4px; text-align: left; min-height: 60px; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .nav-btns button { background: #6c757d; }
+        .status { color: #007bff; font-weight: bold; margin-bottom: 15px; }
+        .correct-text { color: green; font-weight: bold; }
+        .wrong-text { color: red; font-weight: bold; }
+        .ans-highlight { color: #28a745; font-style: italic; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div id="login-screen">
+        <h2 style="color: #333;">Đăng Nhập Ôn Tập</h2>
+        <input type="text" id="user" placeholder="Tên đăng nhập">
+        <input type="password" id="pass" placeholder="Mật khẩu">
+        <button onclick="startQuiz()">Vào Hệ Thống</button>
+        <p style="font-size: 12px; color: gray; margin-top: 15px;">Chào Tuấn Tú, nhập tên bất kỳ để bắt đầu nhé!</p>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="status">Câu <span id="q-num">1</span> / 105</div>
+        <h3 id="question-text" style="text-align: left; color: #444;">Đang tải...</h3>
+        <div id="options-list"></div>
+
+        <div class="jerry-box">
+            <strong>🤖 Trợ lý Jerry:</strong>
+            <p id="jerry-msg" style="margin: 5px 0 0 0;">Chào bạn! Hãy chọn đáp án đúng nhất.</p>
+        </div>
+
+        <div class="nav-btns">
+            <button onclick="changeQuestion(-1)">Câu trước</button>
+            <button onclick="changeQuestion(1)">Câu sau</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dữ liệu mẫu (Bạn có thể thêm tiếp 105 câu vào đây)
+    const questions = [
+        { q: "Trong hệ thống kinh tế hỗn hợp thì:", options: ["a. Các nguồn lực khan hiếm được phân bổ bởi bàn tay vô hình.", "b. Các vấn đề kinh tế được giải quyết bởi chính phủ.", "c. Các vấn đề kinh tế được giải quyết bởi chính phủ và thị trường.", "d. Tất cả các quyết định kinh tế thuộc về tư nhân."], correct: 2 },
+        { q: "Người dân, doanh nghiệp và xã hội thực hiện đánh đổi vì:", options: ["a. Mâu thuẫn giữa thời gian và tiền bạc.", "b. Mâu thuẫn giữa lợi ích và chi phí.", "c. Mâu thuẫn giữa các nhu cầu.", "d. Mâu thuẫn giữa nhu cầu vô hạn và nguồn lực khan hiếm."], correct: 3 },
+        { q: "Khái niệm kinh tế không thể lý giải bằng đường PPF là:", options: ["a. Chi phí cơ hội.", "b. Sự khan hiếm.", "c. Khái niệm về cung hàng hóa.", "d. Quy luật chi phí tăng dần."], correct: 2 }
+    ];
+
+    let currentQ = 0;
+
+    function startQuiz() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        if(!u || !p) { alert("Vui lòng nhập tên và mật khẩu!"); return; }
+        
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const data = questions[currentQ];
+        document.getElementById('q-num').innerText = currentQ + 1;
+        document.getElementById('question-text').innerText = data.q;
+        const list = document.getElementById('options-list');
+        list.innerHTML = "";
+        
+        data.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkResult(index);
+            list.appendChild(btn);
+        });
+        document.getElementById('jerry-msg').innerText = "Jerry đang chờ bạn chọn đáp án...";
+    }
+
+    function checkResult(index) {
+        const data = questions[currentQ];
+        const msg = document.getElementById('jerry-msg');
+        
+        if(index === data.correct) {
+            msg.innerHTML = "<span class='correct-text'>Chính xác rồi, Bạn giỏi quá!</span>";
+        } else {
+            // Khi chọn sai, Jerry báo sai và hiển thị nội dung đáp án đúng
+            const correctContent = data.options[data.correct];
+            msg.innerHTML = `<span class='wrong-text'>Sai rồi, Bạn hãy thử lại đi!</span><br>
+                             <span>Đáp án đúng là: <b class='ans-highlight'>${correctContent}</b></span>`;
+        }
+    }
+
+    function changeQuestion(step) {
+        currentQ += step;
+        if(currentQ < 0) currentQ = 0;
+        if(currentQ >= questions.length) {
+            alert("Đã hết danh sách câu hỏi!");
+            currentQ = questions.length - 1;
+        }
+        loadQuestion();
+    }
+</script>
+</body>
+</html>
